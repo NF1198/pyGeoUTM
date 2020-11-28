@@ -74,6 +74,9 @@ def getInstance(zone: int, datum: Datum = WGS84) -> Callable[[LatLonCoord], Coor
         T = pow(tan(phi), 2.0)
         C = e0sq * pow(cos(phi), 2.0)
         A = (lngd - zcm) * drad * cos(phi)
+        A2 = A * A
+        C2 = C * C
+        T2 = T * T
 
         # calculate M (USGS style)
         M = phi * (1.0 - esq * (0.25 + esq * (3.0 / 64.0 + 5.0 * esq / 256.0)))
@@ -86,11 +89,11 @@ def getInstance(zone: int, datum: Datum = WGS84) -> Callable[[LatLonCoord], Coor
 
         # calculate the UTM values...
         # first the easting
-        x = k0 * N * A * (1 + A * A * ((1 - T + C) / 6.0 + A * A * (5 - 18 * T + T * T + 72 * C - 58 * e0sq) / 120.0)) #Easting relative to CM
+        x = k0 * N * A * (1 + A2 * ((1 - T + C) / 6.0 + A2 * (5 - 18 * T + T2 + 72 * C - 58 * e0sq) / 120.0)) #Easting relative to CM
         x += 500000 # standard easting
 
         # now the northing
-        y = k0 * (M - M0 + N * tan(phi) * (A * A * (0.5 + A * A * ((5 - T + 9 * C + 4 * C * C) / 24.0 + A * A * (61 - 58 * T + T * T + 600 * C - 330 * e0sq) / 720.0))))    # first from the equator
+        y = k0 * (M - M0 + N * tan(phi) * (A2 * (0.5 + A2 * ((5 - T + 9 * C + 4 * C2) / 24.0 + A2 * (61 - 58 * T + T2 + 600 * C - 330 * e0sq) / 720.0))))    # first from the equator
         if y < 0:
             y = 10000000 + y   # add in false northing if south of the equator
 
