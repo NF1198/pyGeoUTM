@@ -59,11 +59,9 @@ def getInstance(zone: int, datum: Datum = WGS84) -> Callable[[LatLonCoord], Coor
     b = a * (1 - f)               # polar radius
     esq = (1 - pow((b / a), 2.0)) # e-squared for use in expansions
     e = sqrt(esq)                 # eccentricity
-    e0 = e / sqrt(1 - e)          # Called e prime in reference
     e0sq = e * e / (1.0 - pow(e, 2.0)) # squared - always even powers
 
     # constants used in calculations
-    k = 1.0
     k0 = 0.9996
     drad = pi / 180.0
 
@@ -111,7 +109,6 @@ def getInverseInstance(zone: int, southern: bool, datum: Datum = WGS84) -> Calla
     b = a * (1 - f)                     # polar radius
     esq = (1 - pow((b / a), 2))    # e-squared for use in expansions
     e = sqrt(esq)                  # eccentricity
-    e0 = e / sqrt(1 - e)           # Called e prime in reference
     e0sq = e * e / (1.0 - pow(e, 2))     # squared - always even powers
     e1 = (1 - sqrt(1 - pow(e, 2))) / (1 + sqrt(1 - pow(e, 2)))
 
