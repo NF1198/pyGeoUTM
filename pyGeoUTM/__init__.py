@@ -24,4 +24,4 @@
 
 from .coordinate import Coordinate
 from .latloncoord import LatLonCoord
-from pointlinelocalizer import localize_line, localize_points
+from .pointlinelocalizer import localize_line, localize_points

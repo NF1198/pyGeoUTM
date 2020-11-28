@@ -48,7 +48,7 @@ def findUTMZone(latlon: LatLonCoord) -> int:
     utmz = 1 + int(floor((lngd + 180.0) / 6.0))
     return utmz
 
-def getInstance(datum: Datum = WGS84, zone: int = None) -> Callable[[LatLonCoord], Coordinate]:
+def getInstance(zone: int, datum: Datum = WGS84) -> Callable[[LatLonCoord], Coordinate]:
     utmz = zone
     zcm = 3 + 6 * (utmz - 1) - 180
     d = datum
@@ -99,7 +99,7 @@ def getInstance(datum: Datum = WGS84, zone: int = None) -> Callable[[LatLonCoord
         return Coordinate(x, y)
     return _instance
 
-def getInverseInstance(southern: bool, datum: Datum = WGS84, zone: = None) -> Callable[[Coordinate], LatLonCoord]:
+def getInverseInstance(zone: int, southern: bool, datum: Datum = WGS84) -> Callable[[Coordinate], LatLonCoord]:
     utmz = zone
     d = datum
     south = southern
@@ -109,16 +109,16 @@ def getInverseInstance(southern: bool, datum: Datum = WGS84, zone: = None) -> Ca
     a = d.eqRad
     f = 1.0 / d.flat
     b = a * (1 - f)                     # polar radius
-    esq = (1 - Math.pow((b / a), 2))    # e-squared for use in expansions
-    e = Math.sqrt(esq)                  # eccentricity
-    e0 = e / Math.sqrt(1 - e)           # Called e prime in reference
-    e0sq = e * e / (1.0 - Math.pow(e, 2))     # squared - always even powers
-    e1 = (1 - Math.sqrt(1 - Math.pow(e, 2))) / (1 + Math.sqrt(1 - Math.pow(e, 2)))
+    esq = (1 - pow((b / a), 2))    # e-squared for use in expansions
+    e = sqrt(esq)                  # eccentricity
+    e0 = e / sqrt(1 - e)           # Called e prime in reference
+    e0sq = e * e / (1.0 - pow(e, 2))     # squared - always even powers
+    e1 = (1 - sqrt(1 - pow(e, 2))) / (1 + sqrt(1 - pow(e, 2)))
 
     # constants used in calculations
     k = 1.0
     k0 = 0.9996
-    drad = Math.PI / 180.0
+    drad = pi / 180.0
 
     def _instance(c: Coordinate) -> LatLonCoord:
         x = c.x
@@ -131,19 +131,19 @@ def getInverseInstance(southern: bool, datum: Datum = WGS84, zone: = None) -> Ca
         else:
             M = M0 + (y - 10000000) / k
         mu = M / (a * (1 - esq * (0.25 + esq * (3 / 64.0 + 5 * esq / 256.0))))
-        phi1 = mu + e1 * (1.5 - 27.0 * e1 * e1 / 32.0) * Math.sin(2 * mu) + e1 * e1 * (21.0 / 16.0 - 55.0 * e1 * e1 / 32.0) * Math.sin(4 * mu)   #Footprint Latitude
-        phi1 = phi1 + e1 * e1 * e1 * (Math.sin(6.0 * mu) * 151.0 / 96.0 + e1 * Math.sin(8.0 * mu) * 1097.0 / 512.0)
-        C1 = e0sq * Math.pow(Math.cos(phi1), 2)
-        T1 = Math.pow(Math.tan(phi1), 2)
-        N1 = a / Math.sqrt(1 - Math.pow(e * Math.sin(phi1), 2))
-        R1 = N1 * (1 - Math.pow(e, 2)) / (1 - Math.pow(e * Math.sin(phi1), 2))
+        phi1 = mu + e1 * (1.5 - 27.0 * e1 * e1 / 32.0) * sin(2 * mu) + e1 * e1 * (21.0 / 16.0 - 55.0 * e1 * e1 / 32.0) * sin(4 * mu)   #Footprint Latitude
+        phi1 = phi1 + e1 * e1 * e1 * (sin(6.0 * mu) * 151.0 / 96.0 + e1 * sin(8.0 * mu) * 1097.0 / 512.0)
+        C1 = e0sq * pow(cos(phi1), 2)
+        T1 = pow(tan(phi1), 2)
+        N1 = a / sqrt(1 - pow(e * sin(phi1), 2))
+        R1 = N1 * (1 - pow(e, 2)) / (1 - pow(e * sin(phi1), 2))
         D = (x - 500000) / (N1 * k0)
         phi = (D * D) * (0.5 - D * D * (5.0 + 3.0 * T1 + 10 * C1 - 4.0 * C1 * C1 - 9 * e0sq) / 24.0)
-        phi = phi + Math.pow(D, 6) * (61.0 + 90.0 * T1 + 298.0 * C1 + 45.0 * T1 * T1 - 252.0 * e0sq - 3.0 * C1 * C1) / 720.0
-        phi = phi1 - (N1 * Math.tan(phi1) / R1) * phi
+        phi = phi + pow(D, 6) * (61.0 + 90.0 * T1 + 298.0 * C1 + 45.0 * T1 * T1 - 252.0 * e0sq - 3.0 * C1 * C1) / 720.0
+        phi = phi1 - (N1 * tan(phi1) / R1) * phi
 
-        lat = Math.floor(1000000 * phi / drad) / 1000000.0
-        lng = D * (1.0 + D * D * ((-1.0 - 2.0 * T1 - C1) / 6.0 + D * D * (5.0 - 2.0 * C1 + 28.0 * T1 - 3.0 * C1 * C1 + 8.0 * e0sq + 24.0 * T1 * T1) / 120.0)) / Math.cos(phi1)
+        lat = floor(1000000 * phi / drad) / 1000000.0
+        lng = D * (1.0 + D * D * ((-1.0 - 2.0 * T1 - C1) / 6.0 + D * D * (5.0 - 2.0 * C1 + 28.0 * T1 - 3.0 * C1 * C1 + 8.0 * e0sq + 24.0 * T1 * T1) / 120.0)) / cos(phi1)
         lng = zcm + lng / drad
 
         return LatLonCoord(lat, lng)
